@@ -1,0 +1,22 @@
+{
+  "name": "mongodb-models",
+  "description": "Yet another models for mongodb but with an emphasis on modeling relationships",
+  "keywords": ["relational", "relationship", "objects", "models", "mongodb"],
+  "homepage": "https://github.com/like-falling-leaves/mongodb-models",
+  "bugs": { "url": "https://github.com/like-falling-leaves/mongodb-models/issues" },
+  "license": "MIT",
+  "author": {"name": "Like FallingLeaves", "email": "likefallingleaves@gmail.com"},
+  "main": "./models.js",
+  "maintainers": [{"name": "Like FallingLeaves", "email": "likefallingleaves@gmail.com"}],
+  "version": "0.0.1",
+  "repository": { "type": "git", "url": "git://github.com/like-falling-leaves/mongodb-models.git" },
+  "readmeFilename": "README.md",
+  "dependencies": { 
+    "mongodb" : "~1.2.0", 
+    "mongodb-counter": "~0.0.3", 
+    "lazy.js": "~0.3.2",
+    "syncwrap": "~0.0.6"
+  },
+  "devDependencies": { "mocha": "1.*" },
+  "scripts": { "test": "mocha test/" }
+}
