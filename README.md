@@ -126,4 +126,3 @@ References are a much simpler version of links where a particular object just ha
      // boom!
    });
 ```
-
