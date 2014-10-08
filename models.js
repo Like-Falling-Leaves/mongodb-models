@@ -148,15 +148,23 @@ function modeler(options) {
       if (ids) ret[otherQueryField] = {$in: ids};
       else delete ret[otherQueryField];
       ret[ownQueryField] = ownFieldValue;
-      if (!ids) ret.deleted = {$ne: 1};
+      ret.deleted = {$ne: 1};
       return ret;
     }
 
-    function addLinkIds(ids, done) {
+    function addLinkId(id, done) {
+      var insert = {$setOnInsert: getDocument(this[field], id)};
+      var options = {new: true, upsert: true};
       return db.get('collection').exec(linkCollectionName)
-        .method('insert', getDocuments.wrapped(this[field], ids).sync(true))
-        .successValue(function (done) { return done(null, ids); })
+        .method('findAndModify', getQuery(this[field], [id]), {_id: 1}, insert, options)
+        .successValue(id)
         .done(done || noop)();
+    }
+
+    function addLinkIds(ids, done) {
+      var self = this;
+      var ww = _(ids).map(function (id) { return addLinkId.call(self, id); }).value();
+      return wrap.unwrap(ww).done(done || noop)();
     }
 
     function getDocuments(ownFieldValue, ids) { 
@@ -170,7 +178,6 @@ function modeler(options) {
       return ret;
     }
 
-    function addLinkId(id, done) { return addLinkIds.call(this, [id]).get('0').done(done || noop)(); }
     function addLink(other, done) { return addLinks.call(this, [other]).get('0').done(done || noop)(); }
     function addLinks(others, done) { return addLinkIds.call(this, _(others).pluck('_id').value(), done); }
 
@@ -178,10 +185,10 @@ function modeler(options) {
       return db.get('collection').exec(linkCollectionName)
         .method(
           'update', 
-          getQuery.wrapped(wrap(field, this).sync(true), ids).sync(true),
+          getQuery(this[field], ids),
           {$set: {deleted: 1, deletedTime: new Date().getTime()}},
           {multi: true}
-        ).successValue(function (done) { return done(null, ids); })
+        ).successValue(ids)
         .done(done || noop)();
     }
     function removeLinkId(ids, done) { return removeLinkIds.call(this, [id]).get('0').done(done || noop)(); }

@@ -23,6 +23,12 @@ describe('Models', function () {
   var topics = [];
   var subscribers = [];
   var comments = [];
+  var tests = {};
+
+  function deepTest(test, cb) { 
+    if (!tests[test]) tests[test] = cb;
+    else tests[test](cb);
+  }
 
   it('should create objects: subscribers', function (done) {
     Subscriber.create.one({email: 'some@example.com'}, function (err, sub) {
@@ -67,7 +73,45 @@ describe('Models', function () {
               assert.equal(subs.length, 1);
               assert.ok(subs[0] instanceof Subscriber);
               assert.equal(subs[0]._id, author._id);
+
               done();
+              deepTest ('should delete links', function (done) {
+                topic.removeComment(comment, function (err) {
+                  assert.ok(!err);
+                  topic.comments(function (err, comments) {
+                    assert.ok(!err);
+                    assert.equal(comments.length, 0);
+                    done();
+
+                    deepTest ('should re-add deleted links successfully', function (done) {
+                      topic.addComment(comment, function (err) {
+                        assert.ok(!err);
+                        topic.comments(function (err, comments) {
+                          assert.ok(!err);
+                          assert.equal(comments.length, 1);
+                          assert.ok(comments[0] instanceof Comment);
+                          assert.equal(comments[0]._id, comment._id);
+
+                          done();
+                          deepTest ('should not duplicate links', function (done) {
+                            topic.addComment(comment, function (err) {
+                              assert.ok(!err);
+                              topic.comments(function (err, comments) {
+                                assert.ok(!err);
+                                assert.equal(comments.length, 1);
+                                assert.ok(comments[0] instanceof Comment);
+                                assert.equal(comments[0]._id, comment._id);
+                                
+                                done();
+                              });
+                            });
+                          });
+                        });
+                      });
+                    });
+                  });
+                });
+              });
             });
           });
         });
@@ -75,4 +119,15 @@ describe('Models', function () {
     });
   });
 
+  it ('should delete links', function (done) {
+    deepTest('should delete links', done);
+  });
+
+  it ('should re-add deleted links successfully', function (done) {
+    deepTest('should re-add deleted links successfully', done);
+  });
+
+  it ('should not duplicate links', function (done) {
+    deepTest('should not duplicate links', done);
+  });
 });
