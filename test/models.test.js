@@ -37,7 +37,19 @@ describe('Models', function () {
       assert.equal(sub.email, 'some@example.com');
       subscribers.push(sub);
       done();
+      deepTest('should be able to find objects: subscribers', function (done) {
+        Subscriber.find.byId(sub._id, function (err, sub2) {
+          assert.ok(!err);
+          assert.ok(sub2);
+          assert.ok(sub2._id, sub.id);
+          done();
+        });
+      });
     });
+  });
+
+  it('should be able to find objects: subscribers', function (done) {
+    deepTest('should be able to find objects: subscribers', done);
   });
 
   it('should create objects and add link: topic', function (done) {

@@ -75,7 +75,7 @@ function modeler(options) {
     if (typeof(type) == 'string') type = classes[type];
     return {byId: findById, byIds: findByIds, bySearch: findBySearch, orCreate: findOrCreate};
 
-    function findById(id, done) { return findBySearch.call(this, {_id: id, deleted: {$ne: 1}}, done); }
+    function findById(id, done) { return findBySearch.wrapped.call(this, {_id: id, deleted: {$ne: 1}}).get('0').done(done || noop)(); }
     function findByIds(ids, done) { return findBySearch.call(this, {_id: {$in: ids}, deleted: {$ne: 1}}, done); }
     function findBySearch() {
       var query = {}, sort = {_id: 1}, skip = 0, limit = 0, done = noop;
