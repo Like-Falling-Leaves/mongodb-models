@@ -111,6 +111,27 @@ It is also possible to explore other objects connected via links.
 
 ````
 
+If you want to query the existence of a link, you can do that via the find methods.
+
+
+```javascript
+   // Lets find all comments on a topic.
+   topic.comments(function (err, comments) {
+     // now lets find if topic has a specific comment.
+     topic.findComment(commentId, function (err, foundComment) {
+       // if commentId is linked to <topic>, that specific comment is fetched   
+       // as foundComment.
+     });
+
+     // sometimes you only want to check if an id is linked, not find the 
+     // associated object.  For example, testing if a userId is a subscriber.
+     topic.findSubscriberId(userId, function (err, subId) {
+       // if userId *is* a subscriber, then subId == userId
+     });
+   });
+
+```
+
 #### Installing References
 
 References are a much simpler version of links where a particular object just has the id of the other object.

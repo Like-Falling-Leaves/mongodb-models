@@ -46,8 +46,30 @@ describe('Models', function () {
       assert.ok(topic instanceof Topic);
       assert.equal(topic.name, 'Some topic');
       topics.push(topic);
-      done();
+
+      topic.addSubscriber(subscribers[0], function (err) {
+        assert.ok(!err);
+        done();
+
+        deepTest('should find added links by id', function (done) {
+          topic.findSubscriber(subscribers[0]._id, function (err, sub) {
+            assert.ok(!err);
+            assert.ok(sub);
+            assert.ok(sub instanceof Subscriber);
+            assert.equal(sub._id, subscribers[0]._id);
+            topic.findSubscriberId(subscribers[0]._id, function (err, id2) {
+              assert.ok(!err);
+              assert.equal(sub._id, id2);
+              done();
+            });
+          });
+        });
+      });
     });
+  });
+
+  it('should find added links by id', function (done) {
+    deepTest('should find added links by id', done);
   });
 
   it('should create objects and add Link: comment', function (done) {

@@ -115,6 +115,11 @@ function modeler(options) {
     type.prototype[property[0].toLowerCase() + property.slice(1) + 's']  = getLinks;
     type.prototype[property[0].toLowerCase() + property.slice(1) + 'Id']  = getLinkId;
     type.prototype[property[0].toLowerCase() + property.slice(1) + 'Ids']  = getLinkIds;
+
+    type.prototype['find' + property[0].toUpperCase() + property.slice(1)] = findLink;
+    type.prototype['find' + property[0].toUpperCase() + property.slice(1) + 's']  = findLinks;
+    type.prototype['find' + property[0].toUpperCase() + property.slice(1) + 'Id']  = findLinkId;
+    type.prototype['find' + property[0].toUpperCase() + property.slice(1) + 'Ids']  = findLinkIds;
     
     type.prototype['add' + property[0].toUpperCase() + property.slice(1) + 'Id'] = addLinkId;
     type.prototype['add' + property[0].toUpperCase() + property.slice(1) + 'Ids'] = addLinkIds;
@@ -127,6 +132,23 @@ function modeler(options) {
     type.prototype['remove' + property[0].toUpperCase() + property.slice(1) + 's'] = removeLinks;
 
     return type;
+
+    function findLinkIds(ids, done) {
+      var ret = db.get('collection').exec(linkCollectionName)
+        .methodSync('find', getQuery.wrapped(this[field], ids).sync(true))
+        .methodSync('sort', searchOptions.sort || {})
+        .methodSync('skip', searchOptions.skip || 0);
+      if (searchOptions.limit) ret.methodSync('limit', searchOptions.limit);
+      return ret.method('toArray')
+        .lazyjs().methodSync('pluck', otherQueryField).methodSync('value')
+        .done(done || noop)();
+    }
+    function findLinkId(id, done) { return findLinkIds.call(this, [id]).get('0').done(done || noop)(); }
+    function findLinks(ids, done) {
+      return query[otherQueryField].find.byIds.wrapped(findLinkIds.call(this, ids)).done(done || noop)(); 
+    }
+    function findLink(id, done) { return findLinks.call(this, [id]).get('0').done(done || noop)(); }
+  
     function getLinkIds(done) {
       var ret = db.get('collection').exec(linkCollectionName)
         .methodSync('find', getQuery.wrapped(this[field]).sync(true))
@@ -139,7 +161,7 @@ function modeler(options) {
     }
     function getLinkId(done) { return getLinkIds.call(this).get('0').done(done || noop)(); }
     function getLinks(done) {
-      return query[otherQueryField].find.byIds.wrapped(getLinkIds.call(this)).done(done || noop);
+      return query[otherQueryField].find.byIds.wrapped(getLinkIds.call(this)).done(done || noop)();
     }
     function getLink(done) { return getLinks.call(this).get('0').done(done || noop)(); }
 
