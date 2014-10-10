@@ -52,6 +52,17 @@ describe('Models', function () {
     deepTest('should be able to find objects: subscribers', done);
   });
 
+  it('should create objects if not existing: subscribers', function (done) {
+    Subscriber.find.orCreate('someId', {email: 'some@example.com'}, function (err, sub) {
+      assert.ok(!err);
+      assert.ok(sub instanceof Subscriber);
+      assert.equal(sub._id, 'someId');
+      assert.equal(sub.email, 'some@example.com');
+      subscribers.push(sub);
+      done();
+    });
+  });
+
   it('should create objects and add link: topic', function (done) {
     Topic.create.one({name: 'Some topic', authorId: subscribers[0]._id}, function (err, topic) {
       assert.ok(!err);

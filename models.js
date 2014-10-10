@@ -75,8 +75,12 @@ function modeler(options) {
     if (typeof(type) == 'string') type = classes[type];
     return {byId: findById, byIds: findByIds, bySearch: findBySearch, orCreate: findOrCreate};
 
-    function findById(id, done) { return findBySearch.wrapped.call(this, {_id: id, deleted: {$ne: 1}}).get('0').done(done || noop)(); }
-    function findByIds(ids, done) { return findBySearch.call(this, {_id: {$in: ids}, deleted: {$ne: 1}}, done); }
+    function findById(id, done) { 
+      return findBySearch.wrapped.call(this, {_id: id, deleted: {$ne: 1}}).get('0').done(done || noop)(); 
+    }
+    function findByIds(ids, done) { 
+      return findBySearch.wrapped.call(this, {_id: {$in: ids}, deleted: {$ne: 1}}).done(done || noop)(); 
+    }
     function findBySearch() {
       var query = {}, sort = {_id: 1}, skip = 0, limit = 0, done = noop;
       var args = Array.prototype.slice.call(arguments);
@@ -92,7 +96,9 @@ function modeler(options) {
       return type.fromData.wrapped(search.method('toArray')).sync(true).done(done)();
     }      
     function findOrCreate(id, info, done) {
-      return type.collection.method('findAndModify', {_id: id}, {_id: 1}, {$setOnInsert: info}, {new: true, upsert: true}).done(done || noop)();
+      return type.fromData.wrapped(
+        type.collection.method('findAndModify', {_id: id}, {_id: 1}, {$setOnInsert: info}, {new: true, upsert: true})
+      ).sync(true).done(done || noop)();
     }
   }
 
@@ -201,7 +207,7 @@ function modeler(options) {
     }
 
     function addLink(other, done) { return addLinks.call(this, [other]).get('0').done(done || noop)(); }
-    function addLinks(others, done) { return addLinkIds.call(this, _(others).pluck('_id').value(), done); }
+    function addLinks(others, done) { return addLinkIds.call(this, _(others).pluck('_id').value()).done(done || noop)(); }
 
     function removeLinkIds(ids, done) {
       return db.get('collection').exec(linkCollectionName)
