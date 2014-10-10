@@ -220,7 +220,7 @@ function modeler(options) {
         ).successValue(ids)
         .done(done || noop)();
     }
-    function removeLinkId(ids, done) { return removeLinkIds.call(this, [id]).get('0').done(done || noop)(); }
+    function removeLinkId(id, done) { return removeLinkIds.call(this, [id]).get('0').done(done || noop)(); }
     function removeLink(other, done) { return removeLinks.call(this, [other]).get('0').done(done || noop)(); }
     function removeLinks(others, done) { return removeLinkIds.call(this, _(others).pluck('_id').value(), done); }
   }
