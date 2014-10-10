@@ -95,6 +95,7 @@ function modeler(options) {
       if (limit) search.methodSync('limit', limit);
       return type.fromData.wrapped(search.method('toArray')).sync(true).done(done)();
     }      
+
     function findOrCreate(id, info, done) {
       return type.fromData.wrapped(
         type.collection.method('findAndModify', {_id: id}, {_id: 1}, {$setOnInsert: info}, {new: true, upsert: true})
@@ -106,7 +107,7 @@ function modeler(options) {
     type.prototype[property[0].toLowerCase() + property.slice(1)] = getProperty;
     return type;
     function getProperty(done) {
-      return otherType.fromData.wrapped(this[field]).sync(true).done(done || noop);
+      return otherType.find.byId(this[field]).done(done || noop);
     }
   }
 
