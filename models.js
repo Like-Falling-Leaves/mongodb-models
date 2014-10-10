@@ -146,8 +146,8 @@ function modeler(options) {
         .methodSync('sort', searchOptions.sort || {})
         .methodSync('skip', searchOptions.skip || 0);
       if (searchOptions.limit) ret.methodSync('limit', searchOptions.limit);
-      return ret.method('toArray')
-        .lazyjs().methodSync('pluck', otherQueryField).methodSync('value')
+      return ret.method('toArray').applyToSync(_)
+        .methodSync('pluck', otherQueryField).methodSync('value')
         .done(done || noop)();
     }
     function findLinkId(id, done) { return findLinkIds.call(this, [id]).get('0').done(done || noop)(); }
@@ -162,8 +162,8 @@ function modeler(options) {
         .methodSync('sort', searchOptions.sort || {})
         .methodSync('skip', searchOptions.skip || 0);
       if (searchOptions.limit) ret.methodSync('limit', searchOptions.limit);
-      return ret.method('toArray')
-        .lazyjs().methodSync('pluck', otherQueryField).methodSync('value')
+      return ret.method('toArray').applyToSync(_)
+        .methodSync('pluck', otherQueryField).methodSync('value')
         .done(done || noop)();
     }
     function getLinkId(done) { return getLinkIds.call(this).get('0').done(done || noop)(); }
