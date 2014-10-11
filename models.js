@@ -44,7 +44,7 @@ function modeler(options) {
   function fromData(type) {
     return function (info) { 
       if (info instanceof Array) return _(info).map(type.fromData).value();
-      return new type(info); 
+      else return new type(info); 
     };
   }
 
@@ -82,23 +82,21 @@ function modeler(options) {
       return findBySearch.wrapped.call(this, {_id: {$in: ids}, deleted: {$ne: 1}}).done(done || noop)(); 
     }
     function findBySearch() {
-      var query = {}, sort = {_id: 1}, skip = 0, limit = 0, done = noop;
-      var args = Array.prototype.slice.call(arguments);
+      var query = {}, skip = 0, limit = 0, done = noop;
+      var args = Array.prototype.slice.call(arguments), options = {sort: {_id: -1}};
       if (typeof(args[args.length - 1]) == 'function') done = args.pop(); 
       if (typeof(args[0]) == 'object') query = args.shift();
-      if (typeof(args[0]) == 'object') sort = args.shift();
-      if (!isNaN(parseInt(args[0]))) skip = parseInt(args.shift());
-      if (!isNaN(parseInt(args[0]))) limit = parseInt(args.shift());
+      if (typeof(args[0]) == 'object') options.sort = args.shift();
+      if (!isNaN(parseInt(args[0]))) options.skip = parseInt(args.shift());
+      if (!isNaN(parseInt(args[0]))) options.limit = parseInt(args.shift());
 
-      var search = type.collection.methodSync('find', query).methodSync('sort', sort);
-      if (skip) search.methodSync('skip', skip);
-      if (limit) search.methodSync('limit', limit);
-      return type.fromData.wrapped(search.method('toArray')).sync(true).done(done)();
+      var search = type.collection.methodSync('find', query, options)
+      return type.fromData.wrapped(search.method('toArray')).sync(true).done(done || noop)();
     }      
 
     function findOrCreate(id, info, done) {
       return type.fromData.wrapped(
-        type.collection.method('findAndModify', {_id: id}, {_id: 1}, {$setOnInsert: info}, {new: true, upsert: true})
+        type.collection.method('findAndModify', {_id: id}, {_id: 1}, {$setOnInsert: fixupTime(info)}, {new: true, upsert: true})
       ).sync(true).done(done || noop)();
     }
   }
@@ -138,16 +136,28 @@ function modeler(options) {
     type.prototype['remove' + property[0].toUpperCase() + property.slice(1)] = removeLink;
     type.prototype['remove' + property[0].toUpperCase() + property.slice(1) + 's'] = removeLinks;
 
+    type['from' + property[0].toUpperCase() + property.slice(1) + 'Ids'] = fromLinkIds;
     return type;
 
+    function fromLinkIds(ids, done) {
+      var query = getQuery(null, ids);
+      delete query[ownQueryField];
+      var options = {sort: searchOptions.sort || {_id: -1}, skip: searchOptions.skip || 0};
+      if (searchOptions.limit) options.limit = parseInt(searchOptions.limit);
+      var ret = db.get('collection').exec(linkCollectionName).methodSync('find', query, options);
+      return type.find.byIds.wrapped(
+        ret.method('toArray').applyToSync(_)
+          .methodSync('pluck', ownQueryField).methodSync('compact').methodSync('value')
+      ).done(done || noop);
+    }
+
     function findLinkIds(ids, done) {
-      var ret = db.get('collection').exec(linkCollectionName)
-        .methodSync('find', getQuery.wrapped(this[field], ids).sync(true))
-        .methodSync('sort', searchOptions.sort || {})
-        .methodSync('skip', searchOptions.skip || 0);
-      if (searchOptions.limit) ret.methodSync('limit', searchOptions.limit);
+      var query = getQuery(this[field], ids);
+      var options = {sort: searchOptions.sort || {_id: -1}, skip: searchOptions.skip || 0};
+      if (searchOptions.limit) options.limit = parseInt(searchOptions.limit);
+      var ret = db.get('collection').exec(linkCollectionName).methodSync('find', query, options);
       return ret.method('toArray').applyToSync(_)
-        .methodSync('pluck', otherQueryField).methodSync('value')
+        .methodSync('pluck', otherQueryField).methodSync('compact').methodSync('value')
         .done(done || noop)();
     }
     function findLinkId(id, done) { return findLinkIds.call(this, [id]).get('0').done(done || noop)(); }
@@ -157,13 +167,12 @@ function modeler(options) {
     function findLink(id, done) { return findLinks.call(this, [id]).get('0').done(done || noop)(); }
   
     function getLinkIds(done) {
-      var ret = db.get('collection').exec(linkCollectionName)
-        .methodSync('find', getQuery.wrapped(this[field]).sync(true))
-        .methodSync('sort', searchOptions.sort || {})
-        .methodSync('skip', searchOptions.skip || 0);
-      if (searchOptions.limit) ret.methodSync('limit', searchOptions.limit);
+      var query = getQuery(this[field]);
+      var options = {sort: searchOptions.sort || {_id: -1}, skip: searchOptions.skip || 0};
+      if (searchOptions.limit) options.limit = parseInt(searchOptions.limit);
+      var ret = db.get('collection').exec(linkCollectionName).methodSync('find', query, options);
       return ret.method('toArray').applyToSync(_)
-        .methodSync('pluck', otherQueryField).methodSync('value')
+        .methodSync('pluck', otherQueryField).methodSync('compact').methodSync('value')
         .done(done || noop)();
     }
     function getLinkId(done) { return getLinkIds.call(this).get('0').done(done || noop)(); }
