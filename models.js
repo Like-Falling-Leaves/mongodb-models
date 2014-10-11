@@ -54,7 +54,9 @@ function modeler(options) {
 
     function createOne(info, done) {
       fixupTime(info);
-      var infoWithId = info._id  ? info : setId.wrap(info, type.counters.getNextUniqueId.wrap()).sync(true);
+      var prefix = info._id && info._id.prefix || '';
+      if (prefix) info._id = null;
+      var infoWithId = info._id  ? info : setId.wrap(info, prefix, type.counters.getNextUniqueId.wrap()).sync(true);
       var created = type.collection.method('insert', infoWithId).get('0');
       return type.fromData.wrapped(created).sync(true).done(done || noop)();
     }
@@ -62,7 +64,9 @@ function modeler(options) {
     function createMany(infoArray, done) {
       var infosWithId = _(infoArray).map(function (obj) {
         fixupTime(obj);
-        return obj._id ? obj : setId.wrap(info, type.counters.getNextUniqueId.wrap()).sync(true);
+        var prefix = obj._id && obj._id.prefix || '';
+        if (prefix) obj._id = null;
+        return obj._id ? obj : setId.wrap(info, prefix, type.counters.getNextUniqueId.wrap()).sync(true);
       }).value();
       var created = type.collection.get('insert').exec(unwrap.wrap(infoArray));
       return type.fromData.wrapped(created).sync(true).done(done || noop)();
@@ -244,7 +248,7 @@ function fixupTime(info) {
   return info;
 }
   
-function setId(info, id) { info._id = id.toString(36); return info; }
+function setId(info, prefix, id) { info._id = prefix + id.toString(36); return info; }
 function noop() {}
 function logIt() { console.log('Finished', arguments); }
 function inherit(name, obj) { 
