@@ -98,10 +98,19 @@ function modeler(options) {
       return type.fromData.wrapped(search.method('toArray')).sync(true).done(done || noop)();
     }      
 
-    function findOrCreate(id, info, done) {
-      return type.fromData.wrapped(
-        type.collection.method('findAndModify', {_id: id}, {_id: 1}, {$setOnInsert: fixupTime(info)}, {new: true, upsert: true})
-      ).sync(true).done(done || noop)();
+    function findOrCreate(id, info, done) { 
+      var query = (typeof(id) == 'object') ? id : {_id: id};
+      fixupTime(info);
+      var prefix = info._id && info._id.prefix || '';
+      if (prefix) info._id = null;
+      var infoWithId = (info._id || query._id) ? info : setId.wrap(info, prefix, type.counters.getNextUniqueId.wrap()).sync(true);
+      return findAndModify.wrapped(infoWithId).done(done);
+
+      function findAndModify(infoWithId, done) {
+        return type.fromData.wrapped(
+          type.collection.method('findAndModify', query, {_id: 1}, {$setOnInsert: infoWithId}, {new: true, upsert: true})
+        ).sync(true).done(done || noop)();
+      }
     }
   }
 

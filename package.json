@@ -8,14 +8,14 @@
   "author": {"name": "Like FallingLeaves", "email": "likefallingleaves@gmail.com"},
   "main": "./models.js",
   "maintainers": [{"name": "Like FallingLeaves", "email": "likefallingleaves@gmail.com"}],
-  "version": "0.0.8",
+  "version": "0.0.9",
   "repository": { "type": "git", "url": "git://github.com/like-falling-leaves/mongodb-models.git" },
   "readmeFilename": "README.md",
   "dependencies": { 
-    "mongodb" : "~1.2.0", 
-    "mongodb-counter": "~0.0.3", 
-    "lazy.js": "~0.3.2",
-    "syncwrap": "~0.0.7"
+    "mongodb" : ">=1.2.0", 
+    "mongodb-counter": ">0.0.3", 
+    "lazy.js": ">=0.3.2",
+    "syncwrap": ">=0.0.7"
   },
   "devDependencies": { "mocha": "1.*" },
   "scripts": { "test": "mocha test/" }

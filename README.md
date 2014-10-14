@@ -48,6 +48,15 @@ Creating a class immediately provides a few helper functions.
    Topic.find.byId(id, done);
    Topic.find.byIds(ids, done);
 
+   // You can also find or create ids which is useful.  
+   Topic.find.orCreate(id, {name: 'something'}, done);
+
+   // Sometimes you want to find or create by an alternate index.  If you have
+   // mongodb 2.6 or higher, you can do that.  Note that the following would fail
+   // on earlier versions of mongodb.
+   // Imagine creating user objects by FB ID.  This can be a unique index!
+   User.find.orCreate({fbid: <signedInUserFbId>}, {name: 'Some User'}, done);
+
 ```
    
 ### addReference and addLink.
