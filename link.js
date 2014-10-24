@@ -14,27 +14,38 @@ function link(db) {
       else if (typeof(query[key]) == 'function') otherQueryField = key;
     }
     if (property.slice(-1).toLowerCase() == 's') property = property.slice(0, -1);
-    type.prototype[property[0].toLowerCase() + property.slice(1)] = getLink;
-    type.prototype[property[0].toLowerCase() + property.slice(1) + 's']  = getLinks;
-    type.prototype[property[0].toLowerCase() + property.slice(1) + 'Id']  = getLinkId;
-    type.prototype[property[0].toLowerCase() + property.slice(1) + 'Ids']  = getLinkIds;
 
-    type.prototype['find' + property[0].toUpperCase() + property.slice(1)] = findLink;
-    type.prototype['find' + property[0].toUpperCase() + property.slice(1) + 's']  = findLinks;
-    type.prototype['find' + property[0].toUpperCase() + property.slice(1) + 'Id']  = findLinkId;
-    type.prototype['find' + property[0].toUpperCase() + property.slice(1) + 'Ids']  = findLinkIds;
-    
-    type.prototype['add' + property[0].toUpperCase() + property.slice(1) + 'Id'] = addLinkId;
-    type.prototype['add' + property[0].toUpperCase() + property.slice(1) + 'Ids'] = addLinkIds;
-    type.prototype['add' + property[0].toUpperCase() + property.slice(1)] = addLink;
-    type.prototype['add' + property[0].toUpperCase() + property.slice(1) + 's'] = addLinks;
+    var pGetLink = property[0].toLowerCase() + property.slice(1);
+    var pGetLinks = pGetLink + 's', pGetLinkId = pGetLink + 'Id', pGetLinkIds = pGetLinkId + 's';
+    var pFindLink = 'find' + property[0].toUpperCase() + property.slice(1);
+    var pFindLinks = pFindLink + 's', pFindLinkId = pFindLink + 'Id', pFindLinkIds = pFindLinkId + 's';
+    var pAddLink = 'add' + property[0].toUpperCase() + property.slice(1);
+    var pAddLinks = pAddLink + 's', pAddLinkId = pAddLink + 'Id', pAddLinkIds = pAddLinkId + 's';
+    var pRemoveLink = 'remove' + property[0].toUpperCase() + property.slice(1);
+    var pRemoveLinks = pRemoveLink + 's', pRemoveLinkId = pRemoveLink + 'Id', pRemoveLinkIds = pRemoveLinkId + 's';
+    var pFromLinkIds = 'from' + property[0].toUpperCase() + property.slice(1) + 'Ids';
 
-    type.prototype['remove' + property[0].toUpperCase() + property.slice(1) + 'Id'] = removeLinkId;
-    type.prototype['remove' + property[0].toUpperCase() + property.slice(1) + 'Ids'] = removeLinkIds;
-    type.prototype['remove' + property[0].toUpperCase() + property.slice(1)] = removeLink;
-    type.prototype['remove' + property[0].toUpperCase() + property.slice(1) + 's'] = removeLinks;
+    type.prototype[pGetLink] = getLink;
+    type.prototype[pGetLinks]  = getLinks;
+    type.prototype[pGetLinkId]  = getLinkId;
+    type.prototype[pGetLinkIds]  = getLinkIds;
 
-    type['from' + property[0].toUpperCase() + property.slice(1) + 'Ids'] = fromLinkIds;
+    type.prototype[pFindLink] = findLink;
+    type.prototype[pFindLinks]  = findLinks;
+    type.prototype[pFindLinkId]  = findLinkId;
+    type.prototype[pFindLinkIds]  = findLinkIds;
+
+    type.prototype[pAddLinkId] = addLinkId;
+    type.prototype[pAddLinkIds] = addLinkIds;
+    type.prototype[pAddLink] = addLink;
+    type.prototype[pAddLinks] = addLinks;
+
+    type.prototype[pRemoveLinkId] = removeLinkId;
+    type.prototype[pRemoveLinkIds] = removeLinkIds;
+    type.prototype[pRemoveLink] = removeLink;
+    type.prototype[pRemoveLinks] = removeLinks;
+
+    type[pFromLinkIds] = fromLinkIds;
     return type;
 
     function fromLinkIds(ids, done) {
@@ -58,11 +69,11 @@ function link(db) {
         .methodSync('pluck', otherQueryField).methodSync('compact').methodSync('value')
         .done(done)();
     }
-    function findLinkId(id, done) { return findLinkIds.call(this, [id]).get('0').done(done)(); }
+    function findLinkId(id, done) { return this[pFindLinkIds]([id]).get('0').done(done)(); }
     function findLinks(ids, done) {
-      return query[otherQueryField].find.byIds.wrapped(findLinkIds.call(this, ids)).done(done)(); 
+      return query[otherQueryField].find.byIds.wrapped(this[pFindLinkIds](ids)).done(done)(); 
     }
-    function findLink(id, done) { return findLinks.call(this, [id]).get('0').done(done)(); }
+    function findLink(id, done) { return this[pFindLinks]([id]).get('0').done(done)(); }
   
     function getLinkIds(done) {
       var query = getQuery(this[field]);
@@ -73,11 +84,11 @@ function link(db) {
         .methodSync('pluck', otherQueryField).methodSync('compact').methodSync('value')
         .done(done)();
     }
-    function getLinkId(done) { return getLinkIds.call(this).get('0').done(done)(); }
+    function getLinkId(done) { return this[pGetLinkIds]().get('0').done(done)(); }
     function getLinks(done) {
-      return query[otherQueryField].find.byIds.wrapped(getLinkIds.call(this)).done(done)();
+      return query[otherQueryField].find.byIds.wrapped(this[pGetLinkIds]()).done(done)();
     }
-    function getLink(done) { return getLinks.call(this).get('0').done(done)(); }
+    function getLink(done) { return this[pGetLinks]().get('0').done(done)(); }
 
     function getQuery(ownFieldValue, ids) { 
       var ret = _({}).assign(query).value();
@@ -99,7 +110,7 @@ function link(db) {
 
     function addLinkIds(ids, done) {
       var self = this;
-      var ww = _(ids).map(function (id) { return addLinkId.call(self, id); }).value();
+      var ww = _(ids).map(function (id) { return self[pAddLinkId](id); }).value();
       return wrap.unwrap(ww).done(done)();
     }
 
@@ -114,8 +125,8 @@ function link(db) {
       return ret;
     }
 
-    function addLink(other, done) { return addLinks.call(this, [other]).get('0').done(done)(); }
-    function addLinks(others, done) { return addLinkIds.call(this, _(others).pluck('_id').value()).done(done)(); }
+    function addLink(other, done) { return this[pAddLinks]([other]).get('0').done(done)(); }
+    function addLinks(others, done) { return this[pAddLinkIds](_(others).pluck('_id').value()).done(done)(); }
 
     function removeLinkIds(ids, done) {
       return db.get('collection').exec(linkCollectionName)
@@ -127,8 +138,8 @@ function link(db) {
         ).successValue(ids)
         .done(done)();
     }
-    function removeLinkId(id, done) { return removeLinkIds.call(this, [id]).get('0').done(done)(); }
-    function removeLink(other, done) { return removeLinks.call(this, [other]).get('0').done(done)(); }
-    function removeLinks(others, done) { return removeLinkIds.call(this, _(others).pluck('_id').value(), done); }
+    function removeLinkId(id, done) { return this[pRemoveLinkIds]([id]).get('0').done(done)(); }
+    function removeLink(other, done) { return this[pRemoveLinks]([other]).get('0').done(done)(); }
+    function removeLinks(others, done) { return this[pRemoveLinkIds](_(others).pluck('_id').value(), done); }
   }
 }
