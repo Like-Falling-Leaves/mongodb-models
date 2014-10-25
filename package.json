@@ -8,7 +8,7 @@
   "author": {"name": "Like FallingLeaves", "email": "likefallingleaves@gmail.com"},
   "main": "./models.js",
   "maintainers": [{"name": "Like FallingLeaves", "email": "likefallingleaves@gmail.com"}],
-  "version": "0.0.9",
+  "version": "0.0.10",
   "repository": { "type": "git", "url": "git://github.com/like-falling-leaves/mongodb-models.git" },
   "readmeFilename": "README.md",
   "dependencies": { 
@@ -19,5 +19,8 @@
     "mongo-query": ">=0.5.2"
   },
   "devDependencies": { "mocha": "1.*" },
-  "scripts": { "test": "mocha test/" }
+  "scripts": {
+    "test": "mocha test/",
+    "examples-doc": "mocha -R markdown test/examples.* > examples.md"
+  }
 }

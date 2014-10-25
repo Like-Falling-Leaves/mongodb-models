@@ -101,11 +101,10 @@ function link(db) {
 
     function addLinkId(id, done) {
       var insert = {$setOnInsert: getDocument(this[field], id)};
-      var options = {new: true, upsert: true};
+      var options = {upsert: true};
       return db.get('collection').exec(linkCollectionName)
         .method('findAndModify', getQuery(this[field], [id]), {_id: 1}, insert, options)
-        .successValue(id)
-        .done(done)();
+        .get('_id').done(done)();
     }
 
     function addLinkIds(ids, done) {
@@ -135,11 +134,11 @@ function link(db) {
           getQuery(this[field], ids),
           {$set: {deleted: 1, deletedTime: new Date().getTime()}},
           {multi: true}
-        ).successValue(ids)
-        .done(done)();
+        ).done(done)();
     }
-    function removeLinkId(id, done) { return this[pRemoveLinkIds]([id]).get('0').done(done)(); }
-    function removeLink(other, done) { return this[pRemoveLinks]([other]).get('0').done(done)(); }
+    function removeLinkId(id, done) { return this[pRemoveLinkIds]([id]).done(done)(); }
+    function removeLink(other, done) { return this[pRemoveLinks]([other]).done(done)(); }
     function removeLinks(others, done) { return this[pRemoveLinkIds](_(others).pluck('_id').value(), done); }
   }
 }
+

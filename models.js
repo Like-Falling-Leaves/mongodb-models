@@ -3,6 +3,7 @@ var counter = require('mongodb-counter');
 var wrap = require('syncwrap');
 var _ = require('lazy.js');
 var link  = require('./link');
+var fastLink = require('./fastLink');
 var fixupTime = require('./fixupTime');
 
 module.exports = modeler;
@@ -28,6 +29,7 @@ function modeler(options) {
     Object.defineProperty(init, 'find', {get: inherit('find', findObject(init))});
     init.addReference = addReference.bind(null, init);
     init.addLink = addLink.bind(null, init);
+    init.addFastLink = addFastLink.bind(null, init);
 
     // semi-private data
     init.collection = db.get('collection').execSync(collectionName || name);
@@ -126,6 +128,10 @@ function modeler(options) {
 
   function addLink(type, property, field, searchOptions, linkCollectionName) {
     return link(db).addLink(type, property, field, searchOptions, linkCollectionName);
+  }
+
+  function addFastLink(type, property, field, searchOptions, linkCollectionName) {
+    return fastLink(db).addLink(type, property, field, searchOptions, linkCollectionName);
   }
 
   function getClass(className) { return classes[className]; }
