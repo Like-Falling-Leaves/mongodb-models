@@ -15,8 +15,7 @@
     "mongodb" : ">=1.2.0", 
     "mongodb-counter": ">0.0.3", 
     "lazy.js": ">=0.3.2",
-    "syncwrap": ">=0.0.9",
-    "mongo-query": ">=0.5.2"
+    "syncwrap": ">=0.0.9"
   },
   "devDependencies": { "mocha": "1.*" },
   "scripts": {
